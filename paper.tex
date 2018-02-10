@@ -1,0 +1,287 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out if you need a4paper
+
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts                              % This command is only needed if 
+                                                          % you want to use the \thanks command
+
+\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+% The following packages can be found on http:\\www.ctan.org
+%\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{subfig}
+\usepackage[dvipdfmx]{graphics} % for pdf, bitmapped graphics files
+\usepackage{epsfig} % for postscript graphics files
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+%\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{amssymb}  % assumes amsmath package installed
+\usepackage{url}
+
+\title{\LARGE \bf Classification of Familiarity Based on Cross-Correlation Features Between EEG and Music}
+
+\author{Shintaro~Ito\,$^{1}$, Kosuke~Fukumori\,$^{1}$, Haruki~Okawa\,$^{1}$, Tomoya~Wada\,$^{1}$, and Toshihisa~Tanaka\,$^{1,2}$% <-this % stops a space
+%\thanks{*This work was supported by JSPS KAKENHI Grant Number 26540102.}% <-this % stops a space
+\thanks{$^{1}$Y. Kumagai, H. Okawa, T. Wada, and T. Tanaka are with Department of Electrical and Electronic Engineering at the Tokyo University of Agriculture and Technology, 2-24-16 Nakacho, Koganei-shi, Tokyo, Japan. 
+$^{2}$T. Tanaka is affiliated with RIKEN Brain Science Institute, Wako-shi, Saitama, Japan (e-mail: tanakat@cc.tuat.ac.jp).
+}
+\thanks{
+}}
+
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+Epilepsy is a neurological disorder which causes abnormal discharges in the brain.
+Epileptic focus localization is a important factor for successful epilepsy surgery.
+The intracranial electroencephalogram (iEEG) is the most used signal for detecting epileptic focus.
+The iEEG signals are obtained from Juntendo University Hospital database that consists high frequency oscillations(HFOs).
+HFOs is not consisted open dataset. 
+In this paper, a method for the classification of focal and non-focal iEEG signals using HFOs is presented.
+The iEEG signals are decomposed the into signal components of the same frequency band.
+Various entropy measures calculated from  the iEEG signals.
+Then, some or all of the entropies are chosen as features, which are discriminated into focal or non-focal iEEG by using the support vector machine (SVM).
+Experimental results show that the proposed method is able to differentiate the focal from non-focal iEEG signals with an average classification accuracy of 
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{INTRODUCTION}
+%１段落：てんかんについて，自動検出が求められるのは・・・
+Epilepsy is one of the most common neurological disorders in the world \cite{WHO}.
+Approximately 50 million people worldwide have epilepsy, which is a chronic disorder of the brain \cite{WHO}.
+Epilepsy is characterized by recurrent and unpredictable seizures caused by abnormal discharges in the brain \cite{WHO}.
+In surgical treatment of epilepsy, localization of seizure area is very impotant.
+Because of identification of seizure area, long-term intracranial electroencepharoglam (iEEG) are recoreded from epilepsy patients.
+The seizure are detected from the iEEG recoredings using visual inspection by neurological experts.
+Since the inspection works needs enourmous time.
+Therefore, automatic detection of epileptic focus is required.
+
+%2段落：HFOsにかんして
+Especially, it is said high-frequency oscillations (HFOs) is effective for localization of seizure area \cite{bragin2002local,matsumoto2013pathological,zijlmans2012high}.
+Pathological HFOs consist of ripples (80–-250 Hz) and fastripples(FRs) (\verb|>|200,250 Hz), which are specific biomarkers of epileptogenicity \cite{iimura2017epileptogenic}.
+Akiyama reported that interictalhigh-rate FRs are a potential marker of the epileptogenicity\cite{EPI:EPI3199}.
+
+%３段落：てんかんの自動検出では，・・・がある
+Many approaches for automatic detection of epileptic focus have been proposed such as classification of healthy vs. epileptic, ictal time vs. interictal time, and focal (seizure) part vs. non-focal (non-seizure) part.
+The identification of time uses the nature of iEEG that has spike in seizure time and increse high frequency oscillations in seizure onset time \cite{gutierrez2001, worrell2004}.
+The identification of location uses the nature of iEEG that focal iEEG signals are less random and more stationary than non-focal iEEG signals \cite{andrzejak2012}.
+The most difficult type of classification is seizure focus localization from iEEG of interictal time \cite{faust2015}.
+
+%４段落
+Computer-aided solutions have been developed to assist neurologists.
+Several computer-aided solutions that use signal processing and machine learning heve been proposed to localize seizure focus in epilepsy.
+In this paper, a method for the classification of focal and non-focal iEEG signals using entropy is presented.
+The iEEG signals were filtered into the characteristic frequency bands of the iEEG signal:
+$\delta$:0.5--4 Hz; 
+$\theta$:4--8 Hz; 
+$\alpha$:8--13 Hz; 
+$\beta$:13--30 Hz; 
+$\gamma$:30--80 Hz; 
+ripples:80--250 Hz; 
+fastripples:250--600 Hz.
+Entropy is calculated every 7 frequency bandwidth.
+%The proposed method used to perform the classification of focal and non-focal iEEG signals is shown in Figure \ref{fig:method_flow}.
+Various entropy measures are calculated from the iEEG signals.
+Then, some or all of the entropies are selected for feature values.
+Finally, these selected entropies are used for the classification of focal and non-focal iEEG classes using the support vector machine (SVM) classifier.
+
+
+
+
+\section{Method}
+\subsection{Dataset}
+We used two datasets in this study.
+One of the dataset is Bern–-Barcelona iEEG dataset \cite{andrzejak2012}.
+The other is Juntendo University Hospital dataset.
+
+\subsubsection{Bern–-Barcelona iEEG dataset}
+This dataset consists of recordings of five epilepsy patients who underwent long-term intracranial iEEG recordings at the Department of Neurology of the University of Bern. 
+The patients sufferd from longstanding pharmacoresistant temporal lobe epilepsy and were candidates for epilepsy surgery. 
+The iEEG signals were sampled at a frequency of 512 Hz and digitally band-pass filtered between 0.5 and 150 Hz using a fourth-order Butterworth filter. 
+The multichannel iEEG recordings were labeled focal signals or non-focal signals. 
+Focal signals were recorded at epileptogenic zone. 
+Non-focal signals were recorded at brain area where were not involved in seizure onset. 
+The dataset consists of 3750 focal iEEG signals pairs and 3750 non-focal iEEG signals pairs. Each signal contains a pair of two iEEG signals which are recorded from adjacent channels. 
+The length of iEEG signals in the dataset is 20 seconds. 
+The iEEG signals during seizure activity and three hours after the last seizure activity were excluded. 
+
+\subsubsection{Juntendo University Hospital dataset}
+This  iEEG signals from four patients who had temporal lobe epilepsy of focal cortical dysplasia. The iEEG signals are recorded at the Juntendo University. 
+Multichannel iEEG signals were recorded with intracranial electrodes. 
+The iEEG signals were sampled at 2 kHz. 
+The multichannel iEEG are labeled focal and non-focal channels by experts. 
+Experts labeled focal channels that detected first ictal EEG signal changes All other channels included in the recordings were labeled as non-focal channels. 
+In this paper, we analyze interictal (non seizure time) iEEG signals of 2 hours.
+
+\subsection{Entropy-Based Features Extraction}
+Brief descriptions of these entropies is given in this section.
+
+\subsubsection{Spectral Entropy}
+Spectral entropy quantifies the complexity of the signal to indicate regularity of time series.
+It uses the amplitude components of the power spectrum of the signal as the probabilities in entropy calculations. 
+In this paper, we have used Shannon entropy (ShEn), Renyi entropy (RenEn) and Tsallis' entropy (TsEn)
+These entropies are obtained by multiplying the power in each frequency $p_f$.
+These entorpies can be defined as \cite{kannathal2005,renyi1961measures,chen2014tsallis}:
+\begin{equation}
+ShEn = \sum_f p_f \log  \left(1/p_f\right)
+\end{equation}
+\begin{equation}
+RenEn(\alpha) = -\frac{1}{1-\alpha}\log  \sum_f p_f^\alpha 
+\end{equation}
+\begin{equation}
+TsEn(q) = -\frac{1}{1-q}\biggl( 1 - \sum_f p_f^q \biggl)
+\end{equation}
+
+\subsubsection{Phase Entropy}
+Phase entropy is an indicator of complexity of time series, defined through a bispectrum known as higher order spectra \cite{nikias1993}.
+Phase entropy is calculated from the bispectrum similar to spectral entropy.
+The bispectrum of the signal can be defined as:
+\begin{equation}
+B(f_1, f_2) = X(f_1)X(f_2)X^*(f_1 + f_2)
+\end{equation}
+where $X(f)$ is the Fourier transform of a signal $x(i)$.
+Two type of phase entropy, S1 and S2, are defined as:
+\begin{equation}
+S1 = - \sum _k p_k \log (p_k), \:\:\:\: 
+S2 = -\sum_j q_j \log (q_j)
+\end{equation}
+where
+\begin{equation}
+p_k = \frac{|B(f_1, f_2)|}{\sum_{\Omega \in f_1, f_2} |B(f_1, f_2)|}, \:\:\:\:
+q_j = \frac{|B(f_1, f_2)|^2}{\sum_{ \Omega \in f_1, f_2 } |B(f_1, f_2)|}
+\end{equation}
+
+\subsubsection{Approximate Entropy and Sample Entropy}
+Approximate entropy (ApEn) and sample entropy (SpEn) are an indicator of complexity of time siries \cite{pincus1991}.
+These entropies detects changes of the signal variation and compares the similarity of the samples by pattern length and similarity coefficient.
+SpEn is a modified version of the ApEn \cite{richman2000}.
+ApEn is difined as:
+\begin{eqnarray}
+ApEn(d, r, N) = &\frac{1}{(N-d+1)} \sum_{i-1}^{N-d+1} \ln \left( C_i^d (r) \right) \nonumber\\
+&- \frac{1}{(N-d)} \sum_{i-1}^{N-d} \ln \left( C_i^{d+1} (r) \right)
+\end{eqnarray}
+where the $d$ is the embedding dimension, $r$ is a fixed parameter which sets the tolerance of the comparison and $C_i^d (r)$ is the correlation integral.
+$C_i^d (r)$ is difined as :
+\begin{equation}
+C_i^d(r) = \frac{1}{(N-d+1)} \sum_{j-1}^{N-d+1} \Theta \left(r - ||X(i)-X(j)|| \right)
+\end{equation}
+where $X(i)$ and $X(j)$ are subsequence of time series $x(i)$ and $\Theta$ is the Heaviside function. 
+Also, SpEn is difined as: 
+\begin{equation}
+SpEn(d, r, N) = -\ln \left( \frac{A^d(r)}{B^d(r)} \right)
+\end{equation}
+where 
+\begin{equation}
+B^d(r) = \frac{1}{(N-d)} \sum_{1}^{N-d} C_i^d (r), \:\:\:\
+\end{equation}
+\begin{equation}
+A^d(r) = \frac{1}{(N-d)} \sum_{1}^{N-d} C_i^{d+1} (r)
+\end{equation}
+
+\subsubsection{Permutation Entropy}
+
+
+\subsection{Features Selection}
+Mutual information, a measure of linear and non-linear interdependence between features, is also used as a feature selection criterion\cite{orosco2013survey}.
+Feature selection evaluates mutual information between individual features and class labels\cite{estevez2009normalized}.
+In this paper, Mutual information is used to serect entropy.
+
+\begin{equation}
+I(A;B) = \sum_{a\in A}\sum_{b\in B}P_{A,B}(a,b)\log\frac{P_{A,B}(a,b)}{P_A(a)P_B(b)}
+\end{equation}
+
+
+\subsection{Classification}
+Some of the calculated seven types of the entropies are chosen as features for SVM classifier.
+Combination of entropy is shown in Tables \ref{tab:result_ave_ari} and \ref{tab:result_ave_nashi}.
+Number of IMFs are selected based on statistically significant features ($p \leq 0.05$) on Student's $t$-test.
+The selected features are input to SVM classifier with radial basis function kernel.
+SVM classifier distinguished to focal and non-focal iEEG signals.
+
+
+\section{RESULTS AND DISCUSSION}
+\begin{table*}[t]
+	\begin{center}
+		\caption{ Mutual infomation in Bern–Barcelona iEEG dataset}
+		\label{tab:bern_entropy_mutual_info}
+		\scalebox{1}{
+			\begin{tabular}{|c|c|c|c|c|c|c|c|}
+				\hline
+				\multicolumn{1}{|c|}{{}} & \multicolumn{6}{c|}{Frequancy Band}  \\ 
+				\hline
+				entropy　& δ & θ & α　& β & γ　& ripple　\\
+				\hline
+				Permutation	&	0.01001877	&	0.08369443	&	0.02786098	&	0.02074077	&	0.02054239	&	0.0287999	\\
+				Approximate	&	0.04043817	&	0.00583419	&	0.01410552	&	0.00543831	&	0	&	0.03026465	\\
+				Sample	&	0.01489264	&	0	&	0.02159091	&	0.05448126	&	0.05377349	&	0.02800181	\\
+				Phase(S1)	&	0.00656706	&	0	&	0.01117957	&	0.00603118	&	0.0340779	&	0.01303872	\\
+				Phase(S2)	&	0.01130014	&	0	&	0.00056818	&	0.01421173	&	0.01745291	&	0.00934858	\\
+				Tsallis'	&	0	&	0.02261457	&	0	&	0.02663556	&	0.01635527	&	0.00810457	\\
+				Shannon	&	0	&	0.00519527	&	0	&	0.02347162	&	0.0290724	&	0.01374545	\\
+				Renyi	&	0	&	0.02301328	&	0	&	0.0265711	&	0.0129557	&	0.00589675	\\
+				\hline
+			\end{tabular}
+		}
+	\end{center}
+\end{table*}
+Table \ref{tab:bern_entropy_mutual_info} shows mutual infomation of each entropy in Bern–Barcelona iEEG dataset.
+
+
+\begin{table}[t]
+	\begin{center}
+		\caption[Sum of mutual infomation of each entropy in Bern–Barcelona iEEG dataset ]{Sum of mutual infomation of each entropy in Bern–Barcelona iEEG dataset}
+		\label{tab:bern_entropy_mutual_info_sum}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			entropy & Sum of mutual infomation & Rank \\ \hline
+			Permutation	&	0.19165724	&	1	\\
+			Sample	&	0.17274011	&	2	\\
+			Approximate	&	0.09608084	&	3	\\
+			Tsallis'	&	0.07370997	&	4	\\
+			Shannon	&	0.07148474	&	5	\\
+			Phase(S1)	&	0.07089443	&	6	\\
+			Renyi	&	0.06843683	&	7	\\
+			Phase(S2)	&	0.05288154	&	8	\\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
+
+
+
+\section{CONCLUSION}
+\label{sec:conclusion}
+% Conclusion
+
+
+
+%\addtolength{\textheight}{-12cm}   % This command serves to balance the column lengths
+                                  % on the last page of the document manually. It shortens
+                                  % the textheight of the last page by a suitable amount.
+                                  % This command does not take effect until the next page
+                                  % so it should come on the page before the last. Make
+                                  % sure that you do not shorten the textheight too much.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section*{ACKNOWLEDGMENT}
+%This work was supported by JSPS Grant 16K12456 and the Daiwa Anglo-Japanese Foundation.
+
+\bibliographystyle{IEEEtran}
+\bibliography{ito}
+
+\end{document}
